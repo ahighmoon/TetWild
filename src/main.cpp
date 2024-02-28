@@ -20,29 +20,35 @@
 
 using namespace tetwild;
 
-namespace tetwild {
-    void extractFinalTetmesh(MeshRefinement& MR, Eigen::MatrixXd &V_out, Eigen::MatrixXi &T_out, Eigen::VectorXd &A_out, const Args &args, const State &state);
+namespace tetwild
+{
+    void extractFinalTetmesh(MeshRefinement &MR, Eigen::MatrixXd &V_out, Eigen::MatrixXi &T_out, Eigen::VectorXd &A_out, const Args &args, const State &state);
 } // namespace tetwild
 
 void saveFinalTetmesh(const std::string &output_volume, const std::string &output_surface,
-    const Eigen::MatrixXd &V, const Eigen::MatrixXi &T, const Eigen::VectorXd &A)
+                      const Eigen::MatrixXd &V, const Eigen::MatrixXi &T, const Eigen::VectorXd &A)
 {
     logger().debug("Writing mesh to {}...", output_volume);
     std::string output_format = output_volume.substr(output_volume.size() - 4, 4);
-    if (output_format == "mesh") {
+    if (output_format == "mesh")
+    {
         std::ofstream f(output_volume);
         f.precision(std::numeric_limits<double>::digits10 + 1);
         f << "MeshVersionFormatted 1" << std::endl;
         f << "Dimension 3" << std::endl;
 
-        f << "Vertices" << std::endl << V.rows() << std::endl;
+        f << "Vertices" << std::endl
+          << V.rows() << std::endl;
         for (int i = 0; i < V.rows(); i++)
             f << V(i, 0) << " " << V(i, 1) << " " << V(i, 2) << " " << 0 << std::endl;
-        f << "Triangles" << std::endl << 0 <<std::endl;
+        f << "Triangles" << std::endl
+          << 0 << std::endl;
         f << "Tetrahedra" << std::endl;
         f << T.rows() << std::endl;
-        for (int i = 0; i < T.rows(); i++) {
-            for (int j = 0; j < 4; j++) {
+        for (int i = 0; i < T.rows(); i++)
+        {
+            for (int j = 0; j < 4; j++)
+            {
                 f << T(i, j) + 1 << " ";
             }
             f << 0 << std::endl;
@@ -50,7 +56,9 @@ void saveFinalTetmesh(const std::string &output_volume, const std::string &outpu
 
         f << "End";
         f.close();
-    } else {
+    }
+    else
+    {
         PyMesh::MshSaver mSaver(output_volume, true);
         PyMesh::VectorF V_flat(V.size());
         PyMesh::VectorI T_flat(T.size());
@@ -62,15 +70,14 @@ void saveFinalTetmesh(const std::string &output_volume, const std::string &outpu
         mSaver.save_elem_scalar_field("min_dihedral_angle", A);
     }
 
-
     Eigen::MatrixXd V_sf;
     Eigen::MatrixXi F_sf;
     extractSurfaceMesh(V, T, V_sf, F_sf);
     igl::writeOBJ(output_surface, V_sf, F_sf);
 }
 
-void gtet_new_slz(const Eigen::MatrixXd &VI, const Eigen::MatrixXi &FI, const std::string& slz_file,
-                  const std::array<bool, 4>& ops,
+void gtet_new_slz(const Eigen::MatrixXd &VI, const Eigen::MatrixXi &FI, const std::string &slz_file,
+                  const std::array<bool, 4> &ops,
                   Eigen::MatrixXd &VO, Eigen::MatrixXi &TO, Eigen::VectorXd &AO,
                   const Args &args = Args())
 {
@@ -79,16 +86,17 @@ void gtet_new_slz(const Eigen::MatrixXd &VI, const Eigen::MatrixXi &FI, const st
     MeshRefinement MR(sf, b, args, state);
     MR.deserialization(VI, FI, slz_file);
 
-//    MR.is_dealing_unrounded = true;
+    //    MR.is_dealing_unrounded = true;
     MR.refine(state.ENERGY_AMIPS, ops, false, true);
 
-    extractFinalTetmesh(MR, VO, TO, AO, args, state); //do winding number and output the tetmesh
+    extractFinalTetmesh(MR, VO, TO, AO, args, state); // do winding number and output the tetmesh
 }
 
 #include <geogram/mesh/mesh_io.h>
 #include <geogram/mesh/mesh.h>
-int main(int argc, char *argv[]) {
-    int log_level = 1; // debug
+int main(int argc, char *argv[])
+{
+    int log_level = 2; // debug
     std::string log_filename;
     std::string input_surface;
     std::string output_volume;
@@ -117,9 +125,12 @@ int main(int argc, char *argv[]) {
     app.add_flag("--is-laplacian", args.smooth_open_boundary, "Do Laplacian smoothing for the surface of output on the holes of input (optional)");
     app.add_flag("-q,--is-quiet", args.is_quiet, "Mute console output. (optional)");
 
-    try {
+    try
+    {
         app.parse(argc, argv);
-    } catch (const CLI::ParseError &e) {
+    }
+    catch (const CLI::ParseError &e)
+    {
         return app.exit(e);
     }
 
@@ -128,48 +139,57 @@ int main(int argc, char *argv[]) {
     spdlog::set_level(static_cast<spdlog::level::level_enum>(log_level));
     spdlog::flush_every(std::chrono::seconds(3));
 
-    //initialization
+    // initialization
     GEO::initialize();
-    if(slz_file != "") {
+    if (slz_file != "")
+    {
         args.working_dir = input_surface.substr(0, slz_file.size() - 4);
-    } else {
-        if(output_volume.empty())
+    }
+    else
+    {
+        if (output_volume.empty())
             args.working_dir = input_surface.substr(0, input_surface.size() - 4);
         else
             args.working_dir = output_volume;
     }
 
-    if(args.csv_file.empty()) {
+    if (args.csv_file.empty())
+    {
         args.csv_file = args.working_dir + args.postfix + ".csv";
     }
 
-    if(output_volume.empty()) {
+    if (output_volume.empty())
+    {
         output_volume = args.working_dir + args.postfix + ".msh";
     }
-    output_surface = args.working_dir + args.postfix+"_sf.obj";
+    output_surface = args.working_dir + args.postfix + "_sf.obj";
 
-    if(args.is_quiet) {
+    if (args.is_quiet)
+    {
         args.write_csv_file = false;
     }
 
-    //do tetrahedralization
+    // do tetrahedralization
     Eigen::MatrixXd VI, VO;
     Eigen::MatrixXi FI, TO;
     Eigen::VectorXd AO;
-//    igl::read_triangle_mesh(input_surface, VI, FI);
+    //    igl::read_triangle_mesh(input_surface, VI, FI);
     GEO::Mesh input;
     GEO::mesh_load(input_surface, input);
     VI.resize(input.vertices.nb(), 3);
-    for(int i=0;i<VI.rows();i++)
-        VI.row(i)<<(input.vertices.point(i))[0], (input.vertices.point(i))[1], (input.vertices.point(i))[2];
+    for (int i = 0; i < VI.rows(); i++)
+        VI.row(i) << (input.vertices.point(i))[0], (input.vertices.point(i))[1], (input.vertices.point(i))[2];
     FI.resize(input.facets.nb(), 3);
-    for(int i=0;i<FI.rows();i++)
-        FI.row(i)<<input.facets.vertex(i, 0), input.facets.vertex(i, 1), input.facets.vertex(i, 2);
+    for (int i = 0; i < FI.rows(); i++)
+        FI.row(i) << input.facets.vertex(i, 0), input.facets.vertex(i, 1), input.facets.vertex(i, 2);
 
-    if(slz_file != "") {
+    if (slz_file != "")
+    {
         gtet_new_slz(VI, FI, slz_file,
-            {{true, false, true, true}}, VO, TO, AO, args);
-    } else {
+                     {{true, false, true, true}}, VO, TO, AO, args);
+    }
+    else
+    {
         tetwild::tetrahedralization(VI, FI, VO, TO, AO, args);
     }
     saveFinalTetmesh(output_volume, output_surface, VO, TO, AO);
