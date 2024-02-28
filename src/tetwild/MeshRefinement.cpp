@@ -42,6 +42,8 @@ void MeshRefinement::prepareData(bool is_init) {
         }
         round();
     }
+    std::cout << "t_is_removed.size() = " << t_is_removed.size() << std::endl;
+    std::cout << "keep count = " << std::count(t_is_removed.begin(), t_is_removed.end(), false) << std::endl;
 
     GEO::Mesh simple_mesh;
     getSimpleMesh(simple_mesh);
@@ -229,15 +231,16 @@ void MeshRefinement::refine(int energy_type, const std::array<bool, 4>& ops, boo
     std::cout << "args.save_mid_result = " << args.save_mid_result << std::endl;;
     std::cout << "Waiting for input c: " << std::endl;
     std::cin.get();
-    if (args.save_mid_result == 1)
-        outputMidResult(false, 1);
-
-//    double old_state.eps = state.eps;
-//    state.eps = 0.5 * old_state.eps;
-//    state.eps_2 = state.eps * state.eps;
+    if (args.save_mid_result == 1){
+        // outputMidResult(false, 0.01);
+        // outputMidResult(true, 0.01);
+    }
 
     if (is_pre)
         refine_pre(splitter, collapser, edge_remover, smoother);
+    
+    std::cout << "Refine #1: t_is_removed.size() = " << t_is_removed.size() << std::endl;
+    std::cout << "keep count = " << std::count(t_is_removed.begin(), t_is_removed.end(), false) << std::endl;
 
     /// apply the local operations
     if (is_dealing_unrounded) {
@@ -254,9 +257,6 @@ void MeshRefinement::refine(int energy_type, const std::array<bool, 4>& ops, boo
     int update_buget = 2;
     int update_cnt = 0;
     int is_output = true;
-//    const double eps_s = 0.8;
-//    state.eps *= eps_s;
-//    state.eps_2 *= eps_s*eps_s;
     bool is_split = true;
     for (int pass = old_pass; pass < old_pass + args.max_num_passes; pass++) {
         if (is_dealing_unrounded && pass == old_pass) {
@@ -328,13 +328,13 @@ void MeshRefinement::refine(int energy_type, const std::array<bool, 4>& ops, boo
                 state.eps += state.eps_delta;
                 state.eps_2 = state.eps * state.eps;
                 state.sub_stage++;
-//                logger().debug("[[[[[[[[[[[[[[UPDATE EPSILON {}]]]]]]]]]]]]]]]]", state.eps);
             }
 
-            if (is_output && args.save_mid_result == 1) {
-                outputMidResult(false, 1.5);
-                is_output = false;
-            }
+            // if (pass >= 10) is_output = false;
+            // else if (pass < 10 && is_output && args.save_mid_result == 1) {
+            //     outputMidResult(false, 1.0 + (0.01) * (pass + 1));
+            //     // is_output = false;
+            // }
 
 //            collapser.is_soft = true;
 
@@ -347,6 +347,8 @@ void MeshRefinement::refine(int energy_type, const std::array<bool, 4>& ops, boo
         }
         avg_energy0 = avg_energy;
         max_energy0 = max_energy;
+        std::cout << "Refine, info pass: t_is_removed.size() = " << t_is_removed.size() << std::endl;
+        std::cout << "keep count = " << std::count(t_is_removed.begin(), t_is_removed.end(), false) << std::endl;
     }
 
     old_pass = old_pass + args.max_num_passes;
