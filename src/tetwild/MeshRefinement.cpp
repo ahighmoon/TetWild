@@ -226,7 +226,9 @@ void MeshRefinement::refine(int energy_type, const std::array<bool, 4>& ops, boo
     VertexSmoother smoother(localOperation);
 
     collapser.is_check_quality = true;
-
+    std::cout << "args.save_mid_result = " << args.save_mid_result << std::endl;;
+    std::cout << "Waiting for input c: " << std::endl;
+    std::cin.get();
     if (args.save_mid_result == 1)
         outputMidResult(false, 1);
 
@@ -260,8 +262,9 @@ void MeshRefinement::refine(int energy_type, const std::array<bool, 4>& ops, boo
         if (is_dealing_unrounded && pass == old_pass) {
             updateScalarField(false, false, args.filter_energy_thres);
         }
-
-        logger().info("//////////////// Pass {} ////////////////", pass);
+        std::cout << "Waiting for input pass: " << std::endl;
+        std::cin.get();
+        logger().info("//////////////// Pass {}/{} ////////////////", pass, old_pass + args.max_num_passes);
         if (is_dealing_unrounded)
             collapser.is_limit_length = false;
         doOperations(splitter, collapser, edge_remover, smoother,
@@ -290,23 +293,6 @@ void MeshRefinement::refine(int energy_type, const std::array<bool, 4>& ops, boo
         localOperation.getAvgMaxEnergy(avg_energy, max_energy);
         if (pass > 0 && pass < old_pass + args.max_num_passes - 1
             && avg_energy0 - avg_energy < args.delta_energy_thres && max_energy0 - max_energy < args.delta_energy_thres) {
-
-//            if (args.target_num_vertices > 0 && getInsideVertexSize() > 1.05 * args.target_num_vertices && isRegionFullyRounded()) {
-//                if (state.sub_stage < args.stage) {
-//                    state.eps += state.eps_delta;
-//                    state.eps_2 = state.eps * state.eps;
-//                    state.sub_stage++;
-//                    avg_energy0 = avg_energy;
-//                    max_energy0 = max_energy;
-//                    continue;
-//                } else {
-//                    is_split = false;
-//                    continue;
-////                    break;
-//                }
-//            }
-//            is_split = true;
-
             if (update_cnt == 1) {
                 if (is_hit_min) {
                     update_buget--;

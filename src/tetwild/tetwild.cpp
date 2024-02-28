@@ -196,7 +196,7 @@ namespace tetwild
     {
         igl::Timer igl_timer;
         igl_timer.start();
-        logger().info("Preprocessing...");
+        // logger().info("Preprocessing...");
         Preprocess pp(state);
         if (!pp.init(VI, FI, geo_b_mesh, geo_sf_mesh, args))
         {
@@ -216,7 +216,7 @@ namespace tetwild
         pp.process(geo_sf_mesh, m_vertices, m_faces, args);
         double tmp_time = igl_timer.getElapsedTime();
         addRecord(MeshRecord(MeshRecord::OpType::OP_PREPROCESSING, tmp_time, m_vertices.size(), m_faces.size()), args, state);
-        logger().info("time = {}s", tmp_time);
+        // logger().info("time = {}s", tmp_time);
         return tmp_time;
     }
 
@@ -239,7 +239,7 @@ namespace tetwild
     {
         igl::Timer igl_timer;
         igl_timer.start();
-        logger().info("Delaunay tetrahedralizing...");
+        // logger().info("Delaunay tetrahedralizing...");
         DelaunayTetrahedralization DT;
         m_f_tags.clear();
         raw_e_tags.clear();
@@ -254,10 +254,10 @@ namespace tetwild
         // logger().debug("# bsp_edges = {}", bsp_edges.size());
         // logger().debug("# bsp_faces = {}", bsp_faces.size());
         // logger().debug("# bsp_nodes = {}", bsp_nodes.size());
-        logger().info("Delaunay tetrahedralization done!");
+        // logger().info("Delaunay tetrahedralization done!");
         double tmp_time = igl_timer.getElapsedTime();
         addRecord(MeshRecord(MeshRecord::OpType::OP_DELAUNEY_TETRA, tmp_time, bsp_vertices.size(), bsp_nodes.size()), args, state);
-        logger().info("time = {}s", tmp_time);
+        // logger().info("time = {}s", tmp_time);
         return tmp_time;
     }
 
@@ -271,12 +271,12 @@ namespace tetwild
     {
         igl::Timer igl_timer;
         igl_timer.start();
-        logger().info("Divfaces matching...");
+        // logger().info("Divfaces matching...");
         MC.match();
-        logger().info("Divfaces matching done!");
+        // logger().info("Divfaces matching done!");
         double tmp_time = igl_timer.getElapsedTime();
         addRecord(MeshRecord(MeshRecord::OpType::OP_DIVFACE_MATCH, tmp_time, MC.bsp_vertices.size(), MC.bsp_nodes.size()), args, state);
-        logger().info("time = {}s", tmp_time);
+        // logger().info("time = {}s", tmp_time);
         return tmp_time;
     }
 
@@ -290,7 +290,7 @@ namespace tetwild
     {
         igl::Timer igl_timer;
         igl_timer.start();
-        logger().info("BSP subdivision ...");
+        // logger().info("BSP subdivision ...");
         BSPSubdivision BS(MC);
         BS.init();
         BS.subdivideBSPNodes();
@@ -299,10 +299,10 @@ namespace tetwild
         // logger().debug("# face = {}", MC.bsp_faces.size());
         // logger().debug("# edge = {}", MC.bsp_edges.size());
         // logger().debug("# vertex = {}", MC.bsp_vertices.size());
-        logger().info("BSP subdivision done!");
+        // logger().info("BSP subdivision done!");
         double tmp_time = igl_timer.getElapsedTime();
         addRecord(MeshRecord(MeshRecord::OpType::OP_BSP, tmp_time, MC.bsp_vertices.size(), MC.bsp_nodes.size()), args, state);
-        logger().info("time = {}s", tmp_time);
+        // logger().info("time = {}s", tmp_time);
         return tmp_time;
     }
 
@@ -322,7 +322,7 @@ namespace tetwild
     {
         igl::Timer igl_timer;
         igl_timer.start();
-        logger().info("Tetrehedralizing ...");
+        // logger().info("Tetrehedralizing ...");
         SimpleTetrahedralization ST(state, MC);
         tet_vertices.clear();
         tet_indices.clear();
@@ -334,10 +334,10 @@ namespace tetwild
             ST.labelBoundary(tet_vertices, tet_indices, is_surface_facet);
         // logger().debug("# tet_vertices = {}", tet_vertices.size());
         // logger().debug("# tets = {}", tet_indices.size());
-        logger().info("Tetrahedralization done!");
+        // logger().info("Tetrahedralization done!");
         double tmp_time = igl_timer.getElapsedTime();
         addRecord(MeshRecord(MeshRecord::OpType::OP_SIMPLE_TETRA, tmp_time, tet_vertices.size(), tet_indices.size()), args, state);
-        logger().info("time = {}s", tmp_time);
+        // logger().info("time = {}s", tmp_time);
         return tmp_time;
     }
 
